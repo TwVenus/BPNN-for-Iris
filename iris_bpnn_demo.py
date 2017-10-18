@@ -114,5 +114,5 @@ class Bpnn(object):
 if __name__ == "__main__":
     dataset = Readfile("iris.txt")
     # learning_rate = 學習速率, bias = 偏差值, hidden_node = 隱藏層node個數, output_node = 輸出層個數, correct_rate = 終止條件, error_value = 誤差數
-    bpnn = Bpnn(dataset, learning_rate=0.05, bias=-1, hidden_node=3, output_node=3, correct_rate=0.95, error_value=0.001)
+    bpnn = Bpnn(dataset, learning_rate=0.05, bias=-1, hidden_node=3, output_node=3, correct_rate=1, error_value=0.001)
     bpnn.train()
