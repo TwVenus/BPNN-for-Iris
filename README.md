@@ -1,7 +1,5 @@
 # business_intelligence_BPNN
-
-##網路架構(input, output, hidden)
-####
+## 網路架構 - input, output, hidden
 ![](https://i.imgur.com/lbURdBs.png)
 
 ## 使用方法
