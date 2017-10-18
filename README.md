@@ -1,6 +1,6 @@
 # business_intelligence_BPNN
 ## 網路架構 - input, output, hidden
-![](https://i.imgur.com/NCT2QtR.png)
+　　![](https://i.imgur.com/NCT2QtR.png)
 
 ## 使用方法
 ### 輸入下列語法執行
