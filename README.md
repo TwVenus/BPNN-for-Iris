@@ -1,7 +1,6 @@
 ## image processing
 ---
 ##### 一、概述
-　
 ```
 本程式為使用python語法執行『倒傳遞演算法』來分類IRIS資料集。
 資料集：https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data
