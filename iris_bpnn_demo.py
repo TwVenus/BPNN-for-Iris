@@ -38,7 +38,8 @@ class Bpnn(object):
         weight_length_o = (self.hidden_node + 1) * self.output_node
         for i in range(0, weight_length_o):
             self.weight_list_o.append(round(random.uniform(0.05, -0.05), 2))
-        self.run_count = 0
+        
+		self.run_count = 0
         while True:
             self.pass_count = 0
             self.mse = 0
