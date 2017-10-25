@@ -1,15 +1,15 @@
 # image processing
 
-##### 一、概述
+#### 一、概述
 ```
 本程式為使用python語法執行『倒傳遞演算法』來分類IRIS資料集。
 資料集：https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data
 ```
 
-##### 二、網路架構 ( hidden 層數：1 ， hidden node 個數：3)
+#### 二、網路架構 ( hidden 層數：1 ， hidden node 個數：3)
 ![](https://i.imgur.com/LbaQaRp.png)
 
-##### 三、程式概述 
+#### 三、程式概述 
 ###### 1. 初始化階段
 決定網路架構，初始化weight，weight用random取(-0.05 ~ 0.05)之間，將input到hidden與hidden到input的weight分開存進各別的一維陣列中。
 ```
@@ -95,11 +95,11 @@
         break
 ```
 
-##### 四、hyper parameter 調整比照表
+#### 四、hyper parameter 調整比照表
 　
 ![](https://i.imgur.com/ywRt5UX.jpg)
 
-##### 五、結果
+#### 五、結果
 **訓練數量：150筆**　**準確率：約0.98**　**迭代次數：3148**　**MSE：約0.09486**
 　
 
