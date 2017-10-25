@@ -14,7 +14,7 @@ class Readfile(object):
         self.output_list = np.where(self.output_list == 'Iris-virginica', 2, self.output_list)
 
 class Bpnn(object):
-    def __init__(self, dataset, learning_rate, bias, hidden_node, output_node, correct_rate, error_value):
+    def __init__(self, dataset, learning_rate, bias, hidden_node, output_node, correct_rate, error_value, momentum):
         self.feature_list = dataset.feature_list
         self.output_list = dataset.output_list
         self.learning_rate = learning_rate
@@ -22,6 +22,7 @@ class Bpnn(object):
         self.error_value = error_value
         self.hidden_node = hidden_node
         self.output_node = output_node
+        self.momentum = momentum
         self.bias = bias
 
     def train(self):
@@ -37,10 +38,10 @@ class Bpnn(object):
         weight_length_o = (self.hidden_node + 1) * self.output_node
         for i in range(0, weight_length_o):
             self.weight_list_o.append(round(random.uniform(0.05, -0.05), 2))
-
         self.run_count = 0
         while True:
             self.pass_count = 0
+            self.mse = 0
             for dataset_num in range(0, self.feature_list.shape[0]):
                 ### 前饋階段
                 hidden_after_formula1 = []
@@ -54,6 +55,7 @@ class Bpnn(object):
                     hidden_after_formula1.append(1/(1 + np.math.exp(hiddens_num*-1)))
 
                 output_after_formula1 = []
+                output_after_formula1_t = []
                 for i in range(0, self.output_node):
                     output_num = 0
                     for j in range(0, self.hidden_node):
@@ -61,18 +63,21 @@ class Bpnn(object):
                         output_num += hidden_after_formula1[j] * self.weight_list_o[i * (len(hidden_after_formula1) + 1) + j + 1]
                     output_num += self.bias * self.weight_list_o[i * (len(hidden_after_formula1) + 1)]
                     output_after_formula1.append(1/(1 + np.math.exp(output_num*-1)))
+                output_after_formula1_t = np.where(np.array(output_after_formula1) > 0.5, 1, 0)
 
                 self.error = 0
+                self.error_one = 0
                 for i in range(0, self.output_node):
                     if self.output_list[dataset_num] == i:
-                        for j in range(0, len(output_after_formula1)):
-                            if j == i:  # 表第i個是1 , 其餘是0
-                                self.error += pow(output_after_formula1[j] - 1, 2)
-                            else:
-                                self.error += pow(output_after_formula1[j], 2)
+                        self.error += pow(output_after_formula1[i] - 1, 2)
+                        self.error_one += pow(1 - output_after_formula1_t[i], 2)
+                    else:
+                        self.error += pow(output_after_formula1[i], 2)
+                        self.error_one += pow(0 - output_after_formula1_t[i], 2)
+                self.mse += self.error/3
 
                 ### 倒傳遞階段
-                if round(self.error/3, 2) < self.error_value:
+                if self.error_one == 0:
                     self.pass_count += 1
                 else:
                     correction_value_o = []
@@ -84,35 +89,41 @@ class Bpnn(object):
 
                     correction_value_h = []
                     for i in range(0, self.hidden_node):
-                        corrections = 0
+                        sum = 0
                         for j in range(0, self.output_node):
-                            corrections += self.weight_list_o[j * (len(hidden_after_formula1) + 1) + i + 1] * correction_value_o[j]
-                        correction_value_h.append(hidden_after_formula1[i] * (1 - hidden_after_formula1[i])*corrections)
+                            sum += self.weight_list_o[j * (len(hidden_after_formula1) + 1) + i + 1] * correction_value_o[j]
+                        correction_value_h.append(hidden_after_formula1[i] * (1 - hidden_after_formula1[i])*sum)
 
                     # 調整input 到 hidden 的新weight
-                    for i in range(0, len(correction_value_h)):
+                    for i in range(0, self.hidden_node):
                         for j in range(0, len(self.feature_list[1])):
-                            self.weight_list_h[i * (len(self.feature_list[1]) + 1) + j + 1] += self.learning_rate * correction_value_h[i] * self.feature_list[dataset_num][j]
-                        self.weight_list_h[i * (len(self.feature_list[1]) + 1)] += self.learning_rate * correction_value_h[i] * self.bias
+                            deltaW = correction_value_h[i] * self.feature_list[dataset_num][j]
+                            self.weight_list_h[i * (len(self.feature_list[1]) + 1) + j + 1] += self.learning_rate * deltaW + self.momentum * deltaW
+                        deltaW = correction_value_h[i] * self.bias
+                        self.weight_list_h[i * (len(self.feature_list[1]) + 1)] += self.learning_rate * deltaW + self.momentum * deltaW
 
                     # 調整hidden 到 output 的新weight
-                    for i in range(0, len(correction_value_o)):
-                        for j in range(0, len(hidden_after_formula1)):
-                            self.weight_list_o[i * (len(hidden_after_formula1) + 1) + j + 1] += self.learning_rate * correction_value_o[i] * hidden_after_formula1[j]
-                        self.weight_list_o[i * (len(hidden_after_formula1) + 1)] += self.learning_rate * correction_value_o[i] * self.bias
+                    for i in range(0, self.output_node):
+                        for j in range(0, self.hidden_node):
+                            deltaW = correction_value_o[i] * hidden_after_formula1[j]
+                            self.weight_list_o[i * (len(hidden_after_formula1) + 1) + j + 1] += self.learning_rate * deltaW + self.momentum * deltaW
+                        deltaW = correction_value_o[i] * self.bias
+                        self.weight_list_o[i * (len(hidden_after_formula1) + 1)] += self.learning_rate * deltaW + self.momentum * deltaW
 
             self.run_count += 1
-            self.print(self.pass_count/self.feature_list.shape[0])
+            self.print(self.pass_count/self.feature_list.shape[0], self.mse/self.feature_list.shape[0])
 
             ### 收斂條件
             if self.pass_count >= int(self.correct_rate*self.feature_list.shape[0]):
+                self.print(self.pass_count / self.feature_list.shape[0], self.mse / self.feature_list.shape[0])
                 break
 
-    def print(self, correct_rate):
-        print("count :", self.run_count, " learning_rate : ", self.learning_rate, " correct_rate : ", correct_rate)
+    def print(self, correct_rate, mse):
+        print("count :", self.run_count, " correct_rate : ", correct_rate, " mse : ", mse)
+
 
 if __name__ == "__main__":
     dataset = Readfile("iris.txt")
     # learning_rate = 學習速率, bias = 偏差值, hidden_node = 隱藏層node個數, output_node = 輸出層個數, correct_rate = 終止條件, error_value = 誤差數
-    bpnn = Bpnn(dataset, learning_rate=0.05, bias=-1, hidden_node=3, output_node=3, correct_rate=1, error_value=0.001)
+    bpnn = Bpnn(dataset, learning_rate=0.05, bias=-1, hidden_node=3, output_node=3, correct_rate=0.98, error_value=0.001, momentum=0.01)
     bpnn.train()
