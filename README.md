@@ -1,4 +1,4 @@
-# image processing
+# BPNN for Iris dataset
 
 #### 一、概述
 ```
